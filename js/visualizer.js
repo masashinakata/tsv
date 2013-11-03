@@ -42,9 +42,6 @@ var Visualizer = function (canvas) {
   this.canvas  = canvas;
   this.context = canvas.getContext('postscript');
   
-  this.T = 75;
-  this.P = 0.9;
-
   this.scores = [250, 500, 1000];
 
   this.ticks = [[ 0, 10, 30],
@@ -59,6 +56,18 @@ var Visualizer = function (canvas) {
 
   this.points = [];
 };
+
+(function ($) {
+  $.extend(Visualizer, (function () {
+    var T = 75;
+    var P = 0.9;
+
+    return {
+      T: T,
+      P: P
+    };
+  })());
+})(jQuery);
 
 (function ($) {
   function hypot(x1, y1, x2, y2) {
@@ -208,11 +217,11 @@ var Visualizer = function (canvas) {
 
           if (i % 3 == 0) {
             dragging[2] = 0;
-            dragging[3] = self.T - 1;
+            dragging[3] = Visualizer.T - 1;
           }
           else {
             dragging[2] = 1;
-            dragging[3] = self.T;
+            dragging[3] = Visualizer.T;
           }
         }
       })
@@ -267,8 +276,8 @@ var Visualizer = function (canvas) {
 
         var xo = self.points[i*3].x;
 
-        self.points[i*3+1].y = self.scores[i] * Score.calc(self.T, self.points[i*3+1].x - xo);
-        self.points[i*3+2].y = self.scores[i] * Score.calc(self.T, self.points[i*3+2].x - xo) * self.P;
+        self.points[i*3+1].y = self.scores[i] * Score.calc(Visualizer.T, self.points[i*3+1].x - xo);
+        self.points[i*3+2].y = self.scores[i] * Score.calc(Visualizer.T, self.points[i*3+2].x - xo) * Visualizer.P;
 
         self.draw();
       });
@@ -294,8 +303,8 @@ var Visualizer = function (canvas) {
         var r = this.ticks[i][2];
 
         var ss = this.scores[i];
-        var se = this.scores[i] * Score.calc(this.T, e - s);
-        var sr = this.scores[i] * Score.calc(this.T, r - s) * this.P;
+        var se = this.scores[i] * Score.calc(Visualizer.T, e - s);
+        var sr = this.scores[i] * Score.calc(Visualizer.T, r - s) * Visualizer.P;
 
         var color = this.colors[i];
 
@@ -343,8 +352,8 @@ var Visualizer = function (canvas) {
 
           context.lineTo(xr, ye);
 
-          for (var j = xr; j <= this.T; j += 1) {
-            var y = this.scores[i] * Score.calc(this.T, j - xs) * this.P;
+          for (var j = xr; j <= Visualizer.T; j += 1) {
+            var y = this.scores[i] * Score.calc(Visualizer.T, j - xs) * Visualizer.P;
 
             context.lineTo(j, y);
           }
@@ -367,7 +376,7 @@ var Visualizer = function (canvas) {
         context.moveTo(xs, this.points[i*3].y);
 
         for (var j = 1; j <= xe - xs; j += 1) {
-          var y = this.scores[i] * Score.calc(this.T, j);
+          var y = this.scores[i] * Score.calc(Visualizer.T, j);
 
           context.lineTo(xs + j, y);
         }
