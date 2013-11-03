@@ -328,39 +328,36 @@ var Visualizer = function (canvas) {
       var self    = this;
       var context = this.context;
 
+      var points = [];
+
+      for (var i = 0; i < 3; i ++) {
+        points.push(this.problems[i].ps);
+        points.push(this.problems[i].pe);
+        points.push(this.problems[i].pr);
+      }
+
       $(canvas).mousedown(function (e) {
-        var nearest = [undefined, INF];
-
-        for (var i = 0; i < 9; i ++) {
-          var x = self.points[i].x;
-          var y = self.points[i].y;
-
-          context.moveTo(x, y);
+        var nearest = [undefined, undefined, INF];
+        
+        $.each(points, function (i) {
+          context.moveTo(this.x, this.y);
 
           context.matrixexec(I, function () {
             var p = context.currentPoint();
 
             var d = hypot(e.offsetX, e.offsetY, p[0], p[1]);
 
-            if (d < nearest[1])
-              nearest = [i, d];
+            if (d < nearest[2])
+              nearest = [i, points[i], d];
           });
-        }
+        })
 
-        if (nearest[1] < THRESHOLD) {
-          var i = nearest[0];
+        if (nearest[2] < THRESHOLD) {
+          dragging = [nearest[0], nearest[1].x, 0, Visualizer.T - 1, e.offsetX];
 
-          dragging = [i, self.points[i].x, undefined, undefined, e.offsetX];
-
-          var x = self.points[i].x;
-
-          if (i % 3 == 0) {
-            dragging[2] = 0;
-            dragging[3] = Visualizer.T - 1;
-          }
-          else {
-            dragging[2] = 1;
-            dragging[3] = Visualizer.T;
+          if (i % 3) {
+            dragging[2] += 1;
+            dragging[3] += 1;
           }
         }
       })
@@ -372,51 +369,42 @@ var Visualizer = function (canvas) {
           return false;
 
         var ind = dragging[0];
-        var x   = dragging[1];
+        var dcx = dragging[1];
         var xm  = dragging[2];
         var xp  = dragging[3];
         var ox  = dragging[4];
 
-        context.moveTo(x, 0);
+        context.moveTo(dcx, 0);
 
         context.matrixexec(I, function () {
-          var p = context.currentPoint();
-
-          context.moveTo(p[0] + e.offsetX - ox, 0);
+          context.moveTo(context.currentPoint()[0] + e.offsetX - ox, 0);
         });
 
         var p = context.currentPoint();
 
-        self.points[ind].x = Math.round(Math.max(Math.min(p[0], xp), xm));
+        points[ind].x = Math.round(Math.max(Math.min(p[0], xp), xm));
 
         if (ind % 3 == 0) {
-          if (self.points[ind].x >= self.points[ind+1].x)
-            self.points[ind+1].x = self.points[ind].x + 1;
+          if (points[ind].x >= points[ind+1].x)
+            points[ind+1].x = points[ind].x + 1;
 
-          if (self.points[ind].x >= self.points[ind+2].x)
-            self.points[ind+2].x = self.points[ind].x + 1;
+          if (points[ind].x >= points[ind+2].x)
+            points[ind+2].x = points[ind].x + 1;
         }
         else if (ind % 3 == 1) {
-          if (self.points[ind].x <= self.points[ind-1].x)
-            self.points[ind-1].x = self.points[ind].x - 1;
+          if (points[ind].x <= points[ind-1].x)
+            points[ind-1].x = points[ind].x - 1;
 
-          if (self.points[ind].x > self.points[ind+1].x)
-            self.points[ind+1].x = self.points[ind].x;
+          if (points[ind].x > points[ind+1].x)
+            points[ind+1].x = points[ind].x;
         }
         else {
-          if (self.points[ind].x <= self.points[ind-1].x)
-            self.points[ind-1].x = self.points[ind].x;
+          if (points[ind].x <= points[ind-1].x)
+            points[ind-1].x = points[ind].x;
 
-          if (self.points[ind].x <= self.points[ind-2].x)
-            self.points[ind-2].x = self.points[ind].x - 1;
+          if (points[ind].x <= points[ind-2].x)
+            points[ind-2].x = points[ind].x - 1;
         }
-
-        var i = Math.floor(ind / 3);
-
-        var xo = self.points[i*3].x;
-
-        self.points[i*3+1].y = self.scores[i] * Score.calc(Visualizer.T, self.points[i*3+1].x - xo);
-        self.points[i*3+2].y = self.scores[i] * Score.calc(Visualizer.T, self.points[i*3+2].x - xo) * Visualizer.P;
 
         self.draw();
       });
