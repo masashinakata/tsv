@@ -1,25 +1,3 @@
-var Visualizer = function (canvas) {
-  this.canvas  = canvas;
-  this.context = canvas.getContext('postscript');
-  
-  this.T = 75;
-  this.P = 0.9;
-
-  this.scores = [250, 500, 1000];
-
-  this.ticks = [[ 0, 10, 30],
-                [10, 35, 55],
-                [35, 75, 75]
-               ];
-  
-  this.colors = [[0.5, 0,   0],
-                 [0,   0.5, 0],
-                 [0,   0,   0.5]
-                ];
-
-  this.points = [];
-};
-
 (function ($) {
   $.extend(CanvasRenderingContextPostscript.prototype, (function () {
     function matrixexec(m, fn) {
@@ -57,6 +35,28 @@ var Visualizer = function (canvas) {
     CanvasRenderingContextPostscript.prototype.setTransform.apply(this, m);
   };
 })(jQuery);
+
+var Visualizer = function (canvas) {
+  this.canvas  = canvas;
+  this.context = canvas.getContext('postscript');
+  
+  this.T = 75;
+  this.P = 0.9;
+
+  this.scores = [250, 500, 1000];
+
+  this.ticks = [[ 0, 10, 30],
+                [10, 35, 55],
+                [35, 75, 75]
+               ];
+  
+  this.colors = [[0.5, 0,   0],
+                 [0,   0.5, 0],
+                 [0,   0,   0.5]
+                ];
+
+  this.points = [];
+};
 
 (function ($) {
   function hypot(x1, y1, x2, y2) {
