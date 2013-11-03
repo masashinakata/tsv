@@ -400,7 +400,7 @@ var Visualizer = function (canvas) {
           context.matrixexec(this.dm, function () {
             context.rmoveTo(5, 5);
             
-            context.show(twodecimal(e.y) + ' pt / ' + (e.x - s.x) + ' min');
+            context.show(twodecimal(r.y) + ' pt / ' + (r.x - s.x) + ' min');
           });
         }
       }
