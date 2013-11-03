@@ -314,22 +314,21 @@ var Visualizer = function (canvas) {
       context.setDash([5, 2]);
 
       for (var i = 0; i < 3; i ++) {
-        var xo = this.points[i*3  ].x;
-        var xs = this.points[i*3+1].x;
+        var xs = this.points[i*3  ].x;
+        var xe = this.points[i*3+1].x;
         var xr = this.points[i*3+2].x;
-        var xe = this.T;
 
-        context.moveTo(xs, this.points[i*3+1].y);
+        var ys = this.points[i*3  ].y;
+        var ye = this.points[i*3+1].y;
+        var yr = this.points[i*3+2].y;
 
-        for (var j = xs; j <= xe; j += 1) {
-          if (j <= xr) {
-            var y = this.scores[i] * Score.calc(this.T, j - xo);
+        if (xr > xe) {
+          context.moveTo(xe, ye);
 
-            context.lineTo(j, y);
-          }
+          context.lineTo(xr, ye);
 
-          if (xr != xs) {
-            var y = this.scores[i] * Score.calc(this.T, j - xo) * (j >= xr ? this.P : 1);
+          for (var j = xr; j <= this.T; j += 1) {
+            var y = this.scores[i] * Score.calc(this.T, j - xs) * this.P;
 
             context.lineTo(j, y);
           }
