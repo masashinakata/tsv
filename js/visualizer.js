@@ -90,26 +90,26 @@ var Visualizer = function (canvas) {
     };
   })());
 
-  var Point = function (x, y, color) {
-    this.x     = x;
-    this.y     = y;
-    this.color = color;
+  var Point = function (x, y) {
+    this.x = x || 0;
+    this.y = y || 0;
   };
 
   $.extend(Point.prototype, (function () {
     var RADIUS = 3;
+    var MARGIN = 2;
 
     function draw(context, dm) {
-      var color = this.color;
-
       context.moveTo(this.x, this.y);
 
       context.matrixexec(dm, function () {
         var p = this.currentPoint();
 
+        var color = this.currentRGBColor();
+
         this.setGray(1);
 
-        this.arc(p[0], p[1], RADIUS + 2, 0, 360);
+        this.arc(p[0], p[1], RADIUS + MARGIN, 0, 360);
 
         this.fill();
 
