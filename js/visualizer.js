@@ -70,6 +70,8 @@ var Visualizer = function (canvas) {
 })(jQuery);
 
 (function ($) {
+  var Context = CanvasRenderingContextPostscript;
+
   function hypot(x1, y1, x2, y2) {
     var x = x2 - x1;
     var y = y2 - y1;
@@ -113,7 +115,7 @@ var Visualizer = function (canvas) {
 
         this.fill();
 
-        CanvasRenderingContextPostscript.prototype.setRGBColor.apply(this, color);
+        Context.prototype.setRGBColor.apply(this, color);
 
         this.arc(p[0], p[1], RADIUS, 0, 360);
 
