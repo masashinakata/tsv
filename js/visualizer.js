@@ -21,9 +21,11 @@
 })(jQuery);
 
 (function ($) {
-  var show = CanvasRenderingContextPostscript.prototype.show;
+  var Context = CanvasRenderingContextPostscript;
+
+  var show = Context.prototype.show;
   
-  CanvasRenderingContextPostscript.prototype.show = function (text) {
+  Context.prototype.show = function (text) {
     this.matrixexec(this.currentMatrix(), function () {
       var p = this.currentPoint();
 
