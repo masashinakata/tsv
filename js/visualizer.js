@@ -1,13 +1,15 @@
 (function ($) {
-  $.extend(CanvasRenderingContextPostscript.prototype, (function () {
+  var Context = CanvasRenderingContextPostscript;
+
+  $.extend(Context.prototype, (function () {
     function matrixexec(m, fn) {
       var mm = this.currentMatrix();
 
-      CanvasRenderingContextPostscript.prototype.setTransform.apply(this, m);
+      Context.prototype.setTransform.apply(this, m);
 
       var r = fn.apply(this);
 
-      CanvasRenderingContextPostscript.prototype.setTransform.apply(this, mm);
+      Context.prototype.setTransform.apply(this, mm);
       
       return r;
     };
