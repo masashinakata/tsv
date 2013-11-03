@@ -106,8 +106,39 @@ var CanvasRenderingContextPostscript = function (context) {
       this.p = undefined;
     }
 
+    return {
+      moveTo:      moveTo,
+      rmoveTo:     rmoveTo,
+      lineTo:      lineTo,
+      rlineTo:     rlineTo,
+      arc:         arc,
+      closePath:   closePath,
+      stroke:      stroke,
+      fill:        fill
+    };
+  })());
+
+  $.extend(CanvasRenderingContextPostscript.prototype, (function () {
+    function clearRect(x, y, w, h) {
+      this.context.clearRect(x, y, w, h);
+    }
+
+    return {
+      clearRect: clearRect
+    };
+  })());
+
+  $.extend(CanvasRenderingContextPostscript.prototype, (function () {
     function setGray(g, a) {
       this.setRGBColor(g, g, g, a);
+    }
+
+    var RE_COLOR = new RegExp(/^#(\d\d)(\d\d)(\d\d)$/);
+
+    function currentGray() {
+      var color = this.currentRGBColor();
+
+      return [color[0] * 0.3 + color[1] * 0.59 + color[2] * 0.11];
     }
 
     function setRGBColor(r, g, b, a) {
@@ -123,32 +154,29 @@ var CanvasRenderingContextPostscript = function (context) {
         this.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
     }
     
+    function currentRGBColor() {
+      if (this.strokeStyle.match(RE_COLOR)) {
+        var r = parseInt(RegExp.$1, 16) / 255;
+        var g = parseInt(RegExp.$2, 16) / 255;
+        var b = parseInt(RegExp.$3, 16) / 255;
+
+        return [r, g, b];
+      }
+      else {
+        return [0, 0, 0];
+      }
+    }
+
     function setDash(dash, offset) {
       this.context.setLineDash(dash);
     }
 
     return {
-      moveTo:      moveTo,
-      rmoveTo:     rmoveTo,
-      lineTo:      lineTo,
-      rlineTo:     rlineTo,
-      arc:         arc,
-      closePath:   closePath,
-      stroke:      stroke,
-      fill:        fill,
-      setGray:     setGray,
-      setRGBColor: setRGBColor,
-      setDash:     setDash
-    };
-  })());
-
-  $.extend(CanvasRenderingContextPostscript.prototype, (function () {
-    function clearRect(x, y, w, h) {
-      this.context.clearRect(x, y, w, h);
-    }
-
-    return {
-      clearRect: clearRect
+      setGray:         setGray,
+      currentGray:     currentGray,
+      setRGBColor:     setRGBColor,
+      currentRGBColor: currentRGBColor,
+      setDash:         setDash
     };
   })());
 
