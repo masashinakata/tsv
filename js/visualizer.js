@@ -207,7 +207,7 @@ var Visualizer = function (canvas) {
           context.stroke();
         });
       }
-      else {
+      else if (false) {		// Suppressed
         context.moveTo(xe, ye);
 
         context.lineTo(Visualizer.T, ye);
