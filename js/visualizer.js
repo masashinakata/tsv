@@ -42,18 +42,6 @@ var Visualizer = function (canvas) {
   this.canvas  = canvas;
   this.context = canvas.getContext('postscript');
   
-  this.scores = [250, 500, 1000];
-
-  this.ticks = [[ 0, 10, 30],
-                [10, 35, 55],
-                [35, 75, 75]
-               ];
-  
-  this.colors = [[0.5, 0,   0],
-                 [0,   0.5, 0],
-                 [0,   0,   0.5]
-                ];
-
   this.points = [];
 };
 
@@ -65,6 +53,20 @@ var Visualizer = function (canvas) {
     return {
       T: T,
       P: P
+    };
+  })());
+})(jQuery);
+
+(function ($) {
+  $.extend(Visualizer, (function () {
+    var PROBLEM_SET = [
+      [ 250, [ 0, 10, 30], [0.5, 0,   0]],
+      [ 500, [10, 35, 55], [0,   0.5, 0]],
+      [1000, [35, 75, 75], [0,   0,   0.5]]
+    ];
+    
+    return {
+      PROBLEM_SET: PROBLEM_SET
     };
   })());
 })(jQuery);
@@ -125,6 +127,141 @@ var Visualizer = function (canvas) {
 
     return {
       draw: draw
+    };
+  })());
+
+  var Problem = function (score) {
+    this.score = score;
+
+    this.color = Problem.COLOR;
+
+    this.ps = new Point();
+    this.pe = new Point();
+    this.pr = new Point();
+  };
+
+  $.extend(Problem, (function () {
+    var COLOR = [0.9, 0.9, 0.9];
+
+    return {
+      COLOR: COLOR
+    };
+  })());
+
+  $.extend(Problem.prototype, (function () {
+    var RE_TWODECIMAL = new RegExp(/(\...).*/);
+
+    function twodecimal(x) {
+      x = x + '';
+      
+      x += (x.indexOf('.') >= 0) ? '00' : '.00';
+
+      return x.replace(RE_TWODECIMAL, '$1');
+    }
+
+    function draw(context, dm) {
+      var xs = this.ps.x;
+      var xe = this.pe.x;
+      var xr = this.pr.x;
+
+      this.ps.y = this.score;
+      this.pe.y = this.score * Score.calc(Visualizer.T, xe - xs);
+      this.pr.y = this.score * Score.calc(Visualizer.T, xr - xs) * Visualizer.P;
+
+      var ys = this.ps.y;
+      var ye = this.pe.y;
+      var yr = this.pr.y;
+
+      Context.prototype.setRGBColor.apply(context, this.color);
+
+      {
+        context.moveTo(xs, ys);
+
+        for (var x = xs + 1; x <= xe; x ++) {
+          var y = this.score * Score.calc(Visualizer.T, x - xs);
+
+          context.lineTo(x, y);
+        }
+
+        context.matrixexec(dm, function () {
+          context.stroke();
+        });
+      }
+
+      context.setDash([5, 2]);
+
+      if (xr > xe) {
+        context.moveTo(xe, ye);
+
+        context.lineTo(xr, ye);
+
+        context.lineTo(xr, yr);
+
+        for (var x = xr + 1; x <= Visualizer.T; x ++) {
+          var y = this.score * Score.calc(Visualizer.T, x - xs) * Visualizer.P;
+
+          context.lineTo(x, y);
+        }
+
+        context.matrixexec(dm, function () {
+          context.stroke();
+        });
+      }
+      else {
+        context.moveTo(xe, ye);
+
+        context.lineTo(Visualizer.T, ye);
+
+        context.matrixexec(dm, function () {
+          context.stroke();
+        });
+      }
+
+      context.setDash([]);
+
+      this.ps.draw(context, dm);
+      this.pe.draw(context, dm);
+      this.pr.draw(context, dm);
+    }
+
+    function drawAnnotation(context, dm) {
+      var xs = this.ps.x;
+      var xe = this.pe.x;
+      var xr = this.pr.x;
+
+      // We are assuming that y is already calculated.
+      var ys = this.ps.y;
+      var ye = this.pe.y;
+      var yr = this.pr.y;
+
+      context.findFont('Helvetica').scaleFont('12px').setFont();
+
+      Context.prototype.setRGBColor.apply(context, this.color);
+
+      {
+        context.moveTo(xe, ye);
+        
+        context.matrixexec(dm, function () {
+          context.rmoveTo(5, 5);
+
+          context.show(twodecimal(ye) + ' pt / ' + (xe - xs) + ' min');
+        });
+      }
+
+      if (xr != xe) {
+        context.moveTo(xr, yr);
+        
+        context.matrixexec(dm, function () {
+          context.rmoveTo(5, 5);
+          
+          context.show(twodecimal(yr) + ' pt / ' + (xr - xs) + ' min');
+        });
+      }
+    }
+
+    return {
+      draw:           draw,
+      drawAnnotation: drawAnnotation
     };
   })());
 
@@ -299,33 +436,25 @@ var Visualizer = function (canvas) {
 
       context.scale((canvas.width - 200) / 75.0, (canvas.height - 50) / 1000.0);
 
-      for (var i = 0; i < 3; i ++) {
-        var s = this.ticks[i][0];
-        var e = this.ticks[i][1];
-        var r = this.ticks[i][2];
+      this.problems = $.map(Visualizer.PROBLEM_SET, function (template) {
+        var score = template[0];
+        var ticks = template[1];
+        var color = template[2];
 
-        var ss = this.scores[i];
-        var se = this.scores[i] * Score.calc(Visualizer.T, e - s);
-        var sr = this.scores[i] * Score.calc(Visualizer.T, r - s) * Visualizer.P;
+        var problem = new Problem(score);
 
-        var color = this.colors[i];
+        problem.ps.x = ticks[0];
+        problem.pe.x = ticks[1];
+        problem.pr.x = ticks[2];
 
-        this.points.push(new Point(s, ss, color));
-        this.points.push(new Point(e, se, color));
-        this.points.push(new Point(r, sr, color));
-      }
+        problem.color = color;
+
+        return problem;
+      });
 
       this.draw();
       
       this.event();
-    }
-
-    function twodecimal(x) {
-      x = x + '';
-      
-      x += (x.indexOf('.') >= 0) ? '00' : '.00';
-
-      return x.replace(/(\...).*/, '$1');
     }
 
     function draw() {
@@ -336,101 +465,13 @@ var Visualizer = function (canvas) {
 
       grid(context, dm);
 
-      context.findFont('Helvetica').scaleFont('12px').setFont();
-
-      context.setDash([5, 2]);
-
-      for (var i = 0; i < 3; i ++) {
-        var xs = this.points[i*3  ].x;
-        var xe = this.points[i*3+1].x;
-        var xr = this.points[i*3+2].x;
-
-        var ys = this.points[i*3  ].y;
-        var ye = this.points[i*3+1].y;
-        var yr = this.points[i*3+2].y;
-
-        if (xr > xe) {
-          context.moveTo(xe, ye);
-
-          context.lineTo(xr, ye);
-
-          for (var j = xr; j <= Visualizer.T; j += 1) {
-            var y = this.scores[i] * Score.calc(Visualizer.T, j - xs) * Visualizer.P;
-
-            context.lineTo(j, y);
-          }
-        }
-
-        CanvasRenderingContextPostscript.prototype.setRGBColor.apply(context, this.colors[i]);
-
-        context.matrixexec(this.dm, function () {
-          context.stroke();
-        });
-      }
-
-      context.setDash([]);
-
-      for (var i = 0; i < 3; i ++) {
-        var xs = this.points[i*3  ].x;
-        var xe = this.points[i*3+1].x;
-        var xr = this.points[i*3+2].x;
-
-        context.moveTo(xs, this.points[i*3].y);
-
-        for (var j = 1; j <= xe - xs; j += 1) {
-          var y = this.scores[i] * Score.calc(Visualizer.T, j);
-
-          context.lineTo(xs + j, y);
-        }
-
-        var p = context.currentPoint();
-
-        CanvasRenderingContextPostscript.prototype.setRGBColor.apply(context, this.colors[i]);
-
-        context.matrixexec(this.dm, function () {
-          context.stroke();
-        });
-      }
-
-      for (var i = 0; i < 3; i ++) {
-        var ps = this.points[i*3  ];
-        var pe = this.points[i*3+1];
-        var pr = this.points[i*3+2];
-
-        ps.draw(context, dm);
-        pe.draw(context, dm);
-        pr.draw(context, dm);
-      }
-
-      $.each(this.points, function (i) {
+      $.each(this.problems, function () {
         this.draw(context, dm);
       });
-      
-      for (var i = 0; i < 3; i ++) {
-        var s = this.points[i*3];
-        var e = this.points[i*3+1];
-        var r = this.points[i*3+2];
 
-        CanvasRenderingContextPostscript.prototype.setRGBColor.apply(context, this.colors[i]);
-
-        context.moveTo(e.x, e.y);
-        
-        context.matrixexec(this.dm, function () {
-          context.rmoveTo(5, 5);
-          
-          context.show(twodecimal(e.y) + ' pt / ' + (e.x - s.x) + ' min');
-        });
-
-        if (r.x != e.x) {
-          context.moveTo(r.x, r.y);
-
-          context.matrixexec(this.dm, function () {
-            context.rmoveTo(5, 5);
-            
-            context.show(twodecimal(r.y) + ' pt / ' + (r.x - s.x) + ' min');
-          });
-        }
-      }
+      $.each(this.problems, function () {
+        this.drawAnnotation(context, dm);
+      });
     }
 
     return {
