@@ -364,28 +364,6 @@ var Visualizer = function (canvas) {
         context.matrixexec(this.dm, function () {
           context.stroke();
         });
-
-        context.moveTo(p[0], p[1]);
-
-        context.matrixexec(this.dm, function () {
-          context.rmoveTo(5, 5);
-          
-          context.show((p[1] + '00').replace(/(\...).*/, '$1') + ' pt / ' +
-                       (xe - xs) + ' min');
-        });
-
-        if (xr != xe) {
-          var p = [xr, this.scores[i] * Score.calc(this.T, xr - xs) * this.P];
-
-          context.moveTo(p[0], p[1]);
-
-          context.matrixexec(this.dm, function () {
-            context.rmoveTo(5, 5);
-            
-            context.show((p[1] + '00').replace(/(\...).*/, '$1') + ' pt / ' +
-                         (xr - xs) + ' min');
-          });
-        }
       }
 
       for (var i = 0; i < 3; i ++) {
@@ -401,6 +379,32 @@ var Visualizer = function (canvas) {
       $.each(this.points, function (i) {
         this.draw(context, dm);
       });
+      
+      for (var i = 0; i < 3; i ++) {
+        var s = this.points[i*3];
+        var e = this.points[i*3+1];
+        var r = this.points[i*3+2];
+
+        CanvasRenderingContextPostscript.prototype.setRGBColor.apply(context, this.colors[i]);
+
+        context.moveTo(e.x, e.y);
+        
+        context.matrixexec(this.dm, function () {
+          context.rmoveTo(5, 5);
+          
+          context.show(twodecimal(e.y) + ' pt / ' + (e.x - s.x) + ' min');
+        });
+
+        if (r.x != e.x) {
+          context.moveTo(r.x, r.y);
+
+          context.matrixexec(this.dm, function () {
+            context.rmoveTo(5, 5);
+            
+            context.show(twodecimal(e.y) + ' pt / ' + (e.x - s.x) + ' min');
+          });
+        }
+      }
     }
 
     return {
