@@ -206,14 +206,10 @@ var Visualizer = function (canvas) {
 
           if (i % 3 == 0) {
             dragging[2] = 0;
-            dragging[3] = self.points[i+1].x - 1;
-          }
-          else if (i % 3 == 1) {
-            dragging[2] = self.points[i-1].x + 1;
-            dragging[3] = self.T;
+            dragging[3] = self.T - 1;
           }
           else {
-            dragging[2] = self.points[i-1].x + 1;
+            dragging[2] = 1;
             dragging[3] = self.T;
           }
         }
@@ -243,9 +239,27 @@ var Visualizer = function (canvas) {
 
         self.points[ind].x = Math.round(Math.max(Math.min(p[0], xp), xm));
 
-        if (ind % 3 == 1)
+        if (ind % 3 == 0) {
+          if (self.points[ind].x >= self.points[ind+1].x)
+            self.points[ind+1].x = self.points[ind].x + 1;
+
+          if (self.points[ind].x >= self.points[ind+2].x)
+            self.points[ind+2].x = self.points[ind].x + 1;
+        }
+        else if (ind % 3 == 1) {
+          if (self.points[ind].x <= self.points[ind-1].x)
+            self.points[ind-1].x = self.points[ind].x - 1;
+
           if (self.points[ind].x > self.points[ind+1].x)
             self.points[ind+1].x = self.points[ind].x;
+        }
+        else {
+          if (self.points[ind].x <= self.points[ind-1].x)
+            self.points[ind-1].x = self.points[ind].x;
+
+          if (self.points[ind].x <= self.points[ind-2].x)
+            self.points[ind-2].x = self.points[ind].x - 1;
+        }
 
         var i = Math.floor(ind / 3);
 
