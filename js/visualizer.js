@@ -293,6 +293,14 @@ var Visualizer = function (canvas) {
       this.event();
     }
 
+    function twodecimal(x) {
+      x = x + '';
+      
+      x += (x.indexOf('.') >= 0) ? '00' : '.00';
+
+      return x.replace(/(\...).*/, '$1');
+    }
+
     function draw() {
       var context = this.context;
       var dm      = this.dm;
