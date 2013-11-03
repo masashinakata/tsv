@@ -22,17 +22,15 @@
   var show = CanvasRenderingContextPostscript.prototype.show;
   
   CanvasRenderingContextPostscript.prototype.show = function (text) {
-    var m = this.currentMatrix();
+    this.matrixexec(this.currentMatrix(), function () {
+      var p = this.currentPoint();
 
-    var p = this.currentPoint();
+      this.translate(p[0], p[1]);
 
-    this.translate(p[0], p[1]);
+      this.scale(1, -1);
 
-    this.scale(1, -1);
-
-    show.call(this, text);
-
-    CanvasRenderingContextPostscript.prototype.setTransform.apply(this, m);
+      show.call(this, text);
+    });
   };
 })(jQuery);
 
