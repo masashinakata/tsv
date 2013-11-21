@@ -48,7 +48,7 @@ var Visualizer = function (canvas) {
 (function ($) {
   $.extend(Visualizer, (function () {
     var T = 75;
-    var P = 0.9;
+    var P = 0.1;
 
     return {
       T: T,
@@ -164,9 +164,12 @@ var Visualizer = function (canvas) {
       var xe = this.pe.x;
       var xr = this.pr.x;
 
+      var p1 =          Score.calc(Visualizer.T, xe - xs);
+      var p2 = Math.max(Score.calc(Visualizer.T, xr - xs) - Visualizer.P, 0.3);
+
       this.ps.y = this.score;
-      this.pe.y = this.score * Score.calc(Visualizer.T, xe - xs);
-      this.pr.y = this.score * Score.calc(Visualizer.T, xr - xs) * Visualizer.P;
+      this.pe.y = this.score * p1;
+      this.pr.y = this.score * p2;
 
       var ys = this.ps.y;
       var ye = this.pe.y;
@@ -198,9 +201,9 @@ var Visualizer = function (canvas) {
         context.lineTo(xr, yr);
 
         for (var x = xr + 1; x <= Visualizer.T; x ++) {
-          var y = this.score * Score.calc(Visualizer.T, x - xs) * Visualizer.P;
-
-          context.lineTo(x, y);
+          var p = Math.max(Score.calc(Visualizer.T, x - xs) - Visualizer.P, 0.3);
+          
+          context.lineTo(x, this.score * p);
         }
 
         context.matrixexec(dm, function () {
