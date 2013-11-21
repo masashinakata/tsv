@@ -31,6 +31,30 @@ var CanvasRenderingContextPostscript = function (context) {
       this.context.translate(tx, ty);
     }
 
+    function rotate(theta) {
+      var c = Math.cos(theta);
+      var s = Math.sin(theta);
+
+      var m = this.m;
+
+      this.m = [m[0] * c - m[2] * s,
+	        m[1] * c - m[3] * s,
+	        m[0] * s - m[2] * s,
+	        m[1] * s - m[3] * s,
+	        m[4],
+	        m[5]];
+
+      // Apply reverse transformation.
+      if (!! this.p) {
+        var p = this.p;
+
+        this.p = [  p[0] * c + p[1] * s,
+                  - p[0] * s + p[1] * c];
+      }
+
+      this.context.rotate(theta);
+    }
+
     function scale(sx, sy) {
       this.m = [sx * this.m[0], sx * this.m[1],
                 sy * this.m[2], sy * this.m[3],
@@ -46,6 +70,7 @@ var CanvasRenderingContextPostscript = function (context) {
 
     return {
       translate: translate,
+      rotate:    rotate,
       scale:     scale
     };
   })());
@@ -90,6 +115,10 @@ var CanvasRenderingContextPostscript = function (context) {
       this.context.closePath();
     }
     
+    function newPath() {
+      this.context.beginPath();
+    }
+    
     function stroke() {
       this.context.stroke();
       
@@ -113,6 +142,7 @@ var CanvasRenderingContextPostscript = function (context) {
       rlineTo:     rlineTo,
       arc:         arc,
       closePath:   closePath,
+      newPath:     newPath,
       stroke:      stroke,
       fill:        fill
     };
@@ -167,6 +197,10 @@ var CanvasRenderingContextPostscript = function (context) {
       }
     }
 
+    function setLineWidth(width) {
+      this.context.lineWidth = width;
+    }
+
     function setDash(dash, offset) {
       this.context.setLineDash(dash);
     }
@@ -176,6 +210,7 @@ var CanvasRenderingContextPostscript = function (context) {
       currentGray:     currentGray,
       setRGBColor:     setRGBColor,
       currentRGBColor: currentRGBColor,
+      setLineWidth:    setLineWidth,
       setDash:         setDash
     };
   })());
@@ -225,15 +260,20 @@ var CanvasRenderingContextPostscript = function (context) {
   })());
 
   $.extend(CanvasRenderingContextPostscript.prototype, (function () {
-    function show(text) {
+    function show(s) {
       var p = this.p;
 
       if (!! p)
-        this.context.fillText(text, p[0], p[1]);
+        this.context.fillText(s, p[0], p[1]);
+    }
+    
+    function stringWidth(s) {
+      return [this.context.measureText(s).width, 0];
     }
 
     return {
-      show: show
+      show:        show,
+      stringWidth: stringWidth
     };
   })());
 
@@ -289,6 +329,15 @@ var CanvasRenderingContextPostscript = function (context) {
   CanvasRenderingContextPostscript.prototype.__defineGetter__('fillStyle', function () {
     return this.context.fillStyle;
   });
+
+  CanvasRenderingContextPostscript.prototype.__defineSetter__('lineWidth', function (width) {
+    return this.context.lineWidth = width;
+  });
+
+  CanvasRenderingContextPostscript.prototype.__defineGetter__('lineWidth', function () {
+    return this.context.lineWidth;
+  });
+
 })(jQuery);
 
 
