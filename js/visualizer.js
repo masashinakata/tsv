@@ -191,7 +191,7 @@ var Visualizer = function (canvas) {
         });
       }
 
-      context.setDash([5, 2]);
+      context.setDash([5, 2], 0);
 
       if (xr > xe) {
         context.moveTo(xe, ye);
@@ -220,7 +220,7 @@ var Visualizer = function (canvas) {
         });
       }
 
-      context.setDash([]);
+      context.setDash([], 0);
 
       this.ps.draw(context, dm);
       this.pe.draw(context, dm);
